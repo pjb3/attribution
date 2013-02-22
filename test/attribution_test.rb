@@ -59,10 +59,6 @@ class AttributionTest < Test::Unit::TestCase
       ]
     }
 
-    puts JSON.pretty_generate(data)
-
-    puts data.to_json.inspect
-
     book = Book.new(data.to_json)
 
     assert_equal 1, book.id

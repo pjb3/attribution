@@ -11,7 +11,12 @@ module Attribution
   def initialize(attrs={})
     attrs = JSON.parse(attrs) if attrs.is_a?(String)
     attrs.each do |k,v|
-      send("#{k}=", v)
+      setter = "#{k}="
+      if respond_to?(setter)
+        send(setter, v)
+      else
+        instance_variable_set("@#{k}", v)
+      end
     end
   end
 
