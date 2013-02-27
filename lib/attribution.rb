@@ -20,6 +20,13 @@ module Attribution
     end
   end
 
+  def attributes
+    self.class.attributes.inject({}) do |attrs, attr|
+      attrs[attr] = send(attr)
+      attrs
+    end
+  end
+
   module ClassMethods
     def cast(obj)
       case obj
@@ -29,8 +36,13 @@ module Attribution
       end
     end
 
+    def attributes
+      @attributes ||= []
+    end
+
     # Attribute macros
     def string(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", arg.to_s)
@@ -38,6 +50,7 @@ module Attribution
     end
 
     def boolean(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         v = case arg
@@ -51,6 +64,7 @@ module Attribution
     end
 
     def integer(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", arg.to_i)
@@ -58,6 +72,7 @@ module Attribution
     end
 
     def float(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", arg.to_f)
@@ -65,6 +80,7 @@ module Attribution
     end
 
     def decimal(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", BigDecimal.new(arg.to_s))
@@ -72,6 +88,7 @@ module Attribution
     end
 
     def date(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         v = case arg
@@ -85,6 +102,8 @@ module Attribution
     end
 
     def time(attr)
+      attributes << attr.to_sym
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         v = case arg
@@ -98,6 +117,7 @@ module Attribution
     end
 
     def time_zone(attr)
+      attributes << attr.to_sym
       attr_reader(attr)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", ActiveSupport::TimeZone[arg.to_s])
@@ -107,6 +127,7 @@ module Attribution
     # Association macros
     def belongs_to(association_name)
       # foo_id
+      attributes << "#{association_name}_id".to_sym
       define_method("#{association_name}_id") do
         ivar = "@#{association_name}_id"
         if instance_variable_defined?(ivar)

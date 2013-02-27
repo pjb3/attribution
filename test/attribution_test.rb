@@ -79,4 +79,10 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal 3, book.chapters.size
     assert_equal book, book.chapters.first.book
   end
+
+  def test_attributes
+    chapter = Chapter.new(:number => "1")
+    assert_equal [:number, :title, :page_number, :book_id], Chapter.attributes
+    assert_equal({ :number => 1, :title => nil, :page_number => nil, :book_id => nil }, chapter.attributes)
+  end
 end
