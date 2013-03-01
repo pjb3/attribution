@@ -78,7 +78,7 @@ And then you can pass in a Hash or a String of JSON to initialize the object:
         }
       ]
     }}
-    
+
     book = Book.new(json)
 
 The object is populated based on the data, the values are converted into the type defined by the attribute:
@@ -115,6 +115,33 @@ The reciprocating association is populated as well:
 
     >> book.chapters[2].book.title
     => "Rework"
+
+You can access the values of all attributes as a hash:
+
+    >> pp book.attributes
+    {:id=>1,
+     :title=>"Rework",
+     :price=>#<BigDecimal:7f87db1f0b48,'0.22E2',9(18)>,
+     :published_on=>Tue, 09 Mar 2010,
+     :ebook_available=>true,
+     :used=>false,
+     :shipping_weight=>14.4,
+     :created_at=>2013-02-20 05:39:45 -0500,
+     :updated_at=>2013-02-20 05:40:37 -0500,
+     :time_zone=>(GMT-05:00) Eastern Time (US & Canada)}
+
+You can also add any arbitrary metadata to any attribute:
+
+    class Book
+      include Attribution
+
+      decimal :price, :required => true, :doc => "Price in USD", :whatever => "why not?"
+    end
+
+And retrieve that metadata any time:
+
+    >> Book.attributes
+    => [{:required=>true, :doc=>"Price in USD", :whatever=>"why not?", :name=>:price, :type=>:decimal}]
 
 ## Contributing
 

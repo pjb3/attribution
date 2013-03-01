@@ -20,8 +20,9 @@ module Attribution
     end
   end
 
-  def attributes
-    self.class.attributes.inject({}) do |attrs, attr|
+  # TODO: Use associations argument as a way to specify which associations should be included
+  def attributes(*associations)
+    self.class.attribute_names.inject({}) do |attrs, attr|
       attrs[attr] = send(attr)
       attrs
     end
@@ -40,18 +41,25 @@ module Attribution
       @attributes ||= []
     end
 
+    def attribute_names
+      @attribute_names ||= attributes.map{|a| a[:name] }
+    end
+
+    def add_attribute(name, type, metadata={})
+      attr_reader name
+      attributes << (metadata || {}).merge(:name => name.to_sym, :type => type.to_sym)
+    end
+
     # Attribute macros
-    def string(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def string(attr, metadata={})
+      add_attribute(attr, :string, metadata)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", arg.to_s)
       end
     end
 
-    def boolean(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def boolean(attr, metadata={})
+      add_attribute(attr, :boolean, metadata)
       define_method("#{attr}=") do |arg|
         v = case arg
         when String then BOOLEAN_TRUE_STRINGS.include?(arg.downcase)
@@ -63,33 +71,29 @@ module Attribution
       alias_method "#{attr}?", attr
     end
 
-    def integer(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def integer(attr, metadata={})
+      add_attribute(attr, :integer, metadata)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", arg.to_i)
       end
     end
 
-    def float(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def float(attr, metadata={})
+      add_attribute(attr, :float, metadata)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", arg.to_f)
       end
     end
 
-    def decimal(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def decimal(attr, metadata={})
+      add_attribute(attr, :decimal, metadata)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", BigDecimal.new(arg.to_s))
       end
     end
 
-    def date(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def date(attr, metadata={})
+      add_attribute(attr, :date, metadata)
       define_method("#{attr}=") do |arg|
         v = case arg
         when Date then arg
@@ -101,10 +105,8 @@ module Attribution
       end
     end
 
-    def time(attr)
-      attributes << attr.to_sym
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def time(attr, metadata={})
+      add_attribute(attr, :time, metadata)
       define_method("#{attr}=") do |arg|
         v = case arg
         when Date, DateTime then arg.to_time
@@ -116,20 +118,20 @@ module Attribution
       end
     end
 
-    def time_zone(attr)
-      attributes << attr.to_sym
-      attr_reader(attr)
+    def time_zone(attr, metadata={})
+      add_attribute(attr, :time_zone, metadata)
       define_method("#{attr}=") do |arg|
         instance_variable_set("@#{attr}", ActiveSupport::TimeZone[arg.to_s])
       end
     end
 
     # Association macros
-    def belongs_to(association_name)
+    def belongs_to(association_name, metadata={})
       # foo_id
-      attributes << "#{association_name}_id".to_sym
-      define_method("#{association_name}_id") do
-        ivar = "@#{association_name}_id"
+      id_getter = "#{association_name}_id".to_sym
+      add_attribute(id_getter, :integer, metadata)
+      define_method(id_getter) do
+        ivar = "@#{id_getter}"
         if instance_variable_defined?(ivar)
           instance_variable_get(ivar)
         else
@@ -142,8 +144,8 @@ module Attribution
       end
 
       # foo_id=
-      define_method("#{association_name}_id=") do |arg|
-        instance_variable_set("@#{association_name}_id", arg.to_i)
+      define_method("#{id_getter}=") do |arg|
+        instance_variable_set("@#{id_getter}", arg.to_i)
       end
 
       # foo

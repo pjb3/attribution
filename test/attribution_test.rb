@@ -1,6 +1,17 @@
 require 'test/unit'
 require 'attribution'
 
+#TODO: support using a different class name than the association name
+class Author
+  include Attribution
+
+  integer :id
+  string :first_name
+  string :last_name
+
+  has_many :books
+end
+
 class Book
   include Attribution
 
@@ -15,14 +26,26 @@ class Book
   time :updated_at
   time_zone :time_zone
 
+  belongs_to :book
   has_many :chapters
 end
 
 class Chapter
   include Attribution
 
-  integer :number
+  integer :id
+  integer :number, :required => true, :doc => "Starts from 1"
   string :title
+  integer :page_number
+
+  belongs_to :book
+  has_many :pages
+end
+
+class Page
+  include Attribution
+
+  integer :id
   integer :page_number
 
   belongs_to :book
@@ -82,7 +105,13 @@ class AttributionTest < Test::Unit::TestCase
 
   def test_attributes
     chapter = Chapter.new(:number => "1")
-    assert_equal [:number, :title, :page_number, :book_id], Chapter.attributes
-    assert_equal({ :number => 1, :title => nil, :page_number => nil, :book_id => nil }, chapter.attributes)
+    assert_equal [
+      { :name => :id, :type => :integer },
+      { :name => :number, :type => :integer, :required => true, :doc => "Starts from 1" },
+      { :name => :title, :type => :string },
+      { :name => :page_number, :type => :integer },
+      { :name => :book_id, :type => :integer }
+    ], Chapter.attributes
+    assert_equal({ :id => nil, :number => 1, :title => nil, :page_number => nil, :book_id => nil }, chapter.attributes)
   end
 end
