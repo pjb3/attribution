@@ -99,6 +99,7 @@ module Attribution
         when Date then arg
         when Time, DateTime then arg.to_date
         when String then Date.parse(arg)
+        when Hash then Date.new(*arg.slice(:year, :month, :day).values.map(&:to_i))
         else raise ArgumentError.new("can't convert #{arg.class} to Date")
         end
         instance_variable_set("@#{attr}", v)
@@ -112,6 +113,7 @@ module Attribution
         when Date, DateTime then arg.to_time
         when Time then arg
         when String then Time.parse(arg)
+        when Hash then Time.new(*arg.slice(:year, :month, :day, :hour, :min, :sec, :utc_offset).values.map(&:to_i))
         else raise ArgumentError.new("can't convert #{arg.class} to Time")
         end
         instance_variable_set("@#{attr}", v)

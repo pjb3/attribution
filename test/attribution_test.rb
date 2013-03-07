@@ -114,4 +114,14 @@ class AttributionTest < Test::Unit::TestCase
     ], Chapter.attributes
     assert_equal({ :id => nil, :number => 1, :title => nil, :page_number => nil, :book_id => nil }, chapter.attributes)
   end
+
+  def test_date_hash
+    book = Book.new(:published_on => { :year => '2013', :month => '03', :day => '17' })
+    assert_equal Date.parse('2013-03-17'), book.published_on
+  end
+
+  def test_time_hash
+    book = Book.new(:created_at => { :year => '2013', :month => '03', :day => '17', :hour => '07', :min => '30', :sec => '11', :utc_offset => '3600' })
+    assert_equal Time.parse('2013-03-17 07:30:11 +01:00'), book.created_at
+  end
 end
