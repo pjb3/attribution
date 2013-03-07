@@ -120,9 +120,44 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal Date.parse('2013-03-17'), book.published_on
   end
 
+  def test_date_hash_just_year
+    book = Book.new(:published_on => { :year => '2013', :month => '', :day => '' })
+    assert_equal Date.new(2013), book.published_on
+  end
+
+  def test_date_hash_just_year_month
+    book = Book.new(:published_on => { :year => '2013', :month => '5', :day => '' })
+    assert_equal Date.new(2013, 5), book.published_on
+  end
+
+  def test_date_hash_empty
+    book = Book.new(:published_on => { :year => '', :month => '', :day => '' })
+    assert_equal nil, book.published_on
+  end
+
   def test_time_hash
     book = Book.new(:created_at => { :year => '2013', :month => '03', :day => '17', :hour => '07', :min => '30', :sec => '11', :utc_offset => '3600' })
     assert_equal Time.parse('2013-03-17 07:30:11 +01:00'), book.created_at
+  end
+
+  def test_time_hash_empty
+    book = Book.new(:created_at => { :year => '', :month => '', :day => '', :hour => '', :min => '', :sec => '', :utc_offset => '' })
+    assert_equal nil, book.created_at
+  end
+
+  def test_time_hash_just_year
+    book = Book.new(:created_at => { :year => '2013' })
+    assert_equal Time.parse('2013-01-01 00:00:00'), book.created_at
+  end
+
+  def test_time_hash_just_year_month
+    book = Book.new(:created_at => { :year => '2013', :month => '03' })
+    assert_equal Time.parse('2013-03-01 00:00:00'), book.created_at
+  end
+
+  def test_time_hash_just_year_month_day
+    book = Book.new(:created_at => { :year => '2013', :month => '03', :day => '17' })
+    assert_equal Time.parse('2013-03-17 00:00:00'), book.created_at
   end
 
   def test_nil
