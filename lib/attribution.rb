@@ -190,20 +190,25 @@ module Attribution
 
     def has_many(association_name)
       # foos
-      define_method(association_name) do
-        ivar = "@#{association_name}"
-        if instance_variable_defined?(ivar)
-          instance_variable_get(ivar)
-        else
-          # TODO: Support a more generic version of lazy-loading
-          begin
-            association_class = association_name.to_s.singularize.classify.constantize
-          rescue NameError => ex
-            raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
-          end
-
-          if association_class.respond_to?(:all)
+      define_method(association_name) do |*query|
+        
+        # TODO: Support a more generic version of lazy-loading
+        begin
+          association_class = association_name.to_s.singularize.classify.constantize
+        rescue NameError => ex
+          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
+        end
+        
+        if query.empty? # Ex: Books.all, so we want to cache it.
+          ivar = "@#{association_name}"
+          if instance_variable_defined?(ivar)
+            instance_variable_get(ivar)
+          elsif association_class.respond_to?(:all)
             instance_variable_set(ivar, Array(association_class.all("#{self.class.name.underscore}_id" => id)))
+          end
+        else # Ex: Book.all(:name => "The..."), so we do not want to cache it
+          if association_class.respond_to?(:all)
+            Array(association_class.all({"#{self.class.name.underscore}_id" => id}.merge(query.first)))
           end
         end
       end

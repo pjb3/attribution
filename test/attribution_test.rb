@@ -28,6 +28,18 @@ class Book
 
   belongs_to :book
   has_many :chapters
+  has_many :readers
+end
+
+class Reader
+  include Attribution
+  
+  integer :id
+  
+  def self.all(query = {})
+    query
+  end
+  
 end
 
 class Chapter
@@ -100,6 +112,10 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal ActiveSupport::TimeZone["Eastern Time (US & Canada)"], book.time_zone
     assert_equal 1, book.chapters.first.number
     assert_equal 3, book.chapters.size
+    assert_equal ({}), Reader.all
+    assert_equal ([['book_id', 1]]), book.readers
+    assert_equal ([['book_id', 1], [:name,"julio"]]), book.readers(:name => 'julio')
+    assert_equal ([['book_id', 1]]), book.readers # Instance variable caching
     assert_equal book, book.chapters.first.book
   end
 
