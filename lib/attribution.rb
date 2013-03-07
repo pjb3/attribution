@@ -54,7 +54,7 @@ module Attribution
     def string(attr, metadata={})
       add_attribute(attr, :string, metadata)
       define_method("#{attr}=") do |arg|
-        instance_variable_set("@#{attr}", arg.to_s)
+        instance_variable_set("@#{attr}", arg.nil? ? nil : arg.to_s)
       end
     end
 
@@ -64,6 +64,7 @@ module Attribution
         v = case arg
         when String then BOOLEAN_TRUE_STRINGS.include?(arg.downcase)
         when Numeric then arg == 1
+        when nil then nil
         else !!arg
         end
         instance_variable_set("@#{attr}", v)
@@ -74,21 +75,21 @@ module Attribution
     def integer(attr, metadata={})
       add_attribute(attr, :integer, metadata)
       define_method("#{attr}=") do |arg|
-        instance_variable_set("@#{attr}", arg.to_i)
+        instance_variable_set("@#{attr}", arg.nil? ? nil : arg.to_i)
       end
     end
 
     def float(attr, metadata={})
       add_attribute(attr, :float, metadata)
       define_method("#{attr}=") do |arg|
-        instance_variable_set("@#{attr}", arg.to_f)
+        instance_variable_set("@#{attr}", arg.nil? ? nil : arg.to_f)
       end
     end
 
     def decimal(attr, metadata={})
       add_attribute(attr, :decimal, metadata)
       define_method("#{attr}=") do |arg|
-        instance_variable_set("@#{attr}", BigDecimal.new(arg.to_s))
+        instance_variable_set("@#{attr}", arg.nil? ? nil : BigDecimal.new(arg.to_s))
       end
     end
 
@@ -100,6 +101,7 @@ module Attribution
         when Time, DateTime then arg.to_date
         when String then Date.parse(arg)
         when Hash then Date.new(*arg.slice(:year, :month, :day).values.map(&:to_i))
+        when nil then nil
         else raise ArgumentError.new("can't convert #{arg.class} to Date")
         end
         instance_variable_set("@#{attr}", v)
@@ -114,6 +116,7 @@ module Attribution
         when Time then arg
         when String then Time.parse(arg)
         when Hash then Time.new(*arg.slice(:year, :month, :day, :hour, :min, :sec, :utc_offset).values.map(&:to_i))
+        when nil then nil
         else raise ArgumentError.new("can't convert #{arg.class} to Time")
         end
         instance_variable_set("@#{attr}", v)
@@ -123,7 +126,7 @@ module Attribution
     def time_zone(attr, metadata={})
       add_attribute(attr, :time_zone, metadata)
       define_method("#{attr}=") do |arg|
-        instance_variable_set("@#{attr}", ActiveSupport::TimeZone[arg.to_s])
+        instance_variable_set("@#{attr}", arg.nil? ? nil : ActiveSupport::TimeZone[arg.to_s])
       end
     end
 

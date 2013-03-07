@@ -124,4 +124,27 @@ class AttributionTest < Test::Unit::TestCase
     book = Book.new(:created_at => { :year => '2013', :month => '03', :day => '17', :hour => '07', :min => '30', :sec => '11', :utc_offset => '3600' })
     assert_equal Time.parse('2013-03-17 07:30:11 +01:00'), book.created_at
   end
+
+  def test_nil
+    book = Book.new(
+      :id => nil,
+      :title => nil,
+      :price => nil,
+      :published_on => nil,
+      :ebook_available => nil,
+      :used => nil,
+      :shipping_weight => nil,
+      :created_at => nil,
+      :time_zone => nil,
+    )
+    assert_equal nil, book.id
+    assert_equal nil, book.title
+    assert_equal nil, book.price
+    assert_equal nil, book.published_on
+    assert_equal nil, book.ebook_available
+    assert_equal nil, book.used
+    assert_equal nil, book.shipping_weight
+    assert_equal nil, book.created_at
+    assert_equal nil, book.time_zone
+  end
 end
