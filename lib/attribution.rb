@@ -9,16 +9,8 @@ module Attribution
     cls.extend(ClassMethods)
   end
 
-  def initialize(attrs={})
-    attrs = JSON.parse(attrs) if attrs.is_a?(String)
-    attrs.each do |k,v|
-      setter = "#{k}="
-      if respond_to?(setter)
-        send(setter, v)
-      else
-        instance_variable_set("@#{k}", v)
-      end
-    end
+  def initialize(attributes={})
+    self.attributes = attributes
   end
 
   # TODO: Use associations argument as a way to specify which associations should be included
@@ -26,6 +18,20 @@ module Attribution
     self.class.attribute_names.inject({}) do |attrs, attr|
       attrs[attr] = send(attr)
       attrs
+    end
+  end
+
+  def attributes=(attributes)
+    if attributes
+      attributes = JSON.parse(attributes) if attributes.is_a?(String)
+      attributes.each do |k,v|
+        setter = "#{k}="
+        if respond_to?(setter)
+          send(setter, v)
+        else
+          instance_variable_set("@#{k}", v)
+        end
+      end
     end
   end
 
@@ -196,14 +202,14 @@ module Attribution
     def has_many(association_name)
       # foos
       define_method(association_name) do |*query|
-        
+
         # TODO: Support a more generic version of lazy-loading
         begin
           association_class = association_name.to_s.singularize.classify.constantize
         rescue NameError => ex
           raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
         end
-        
+
         if query.empty? # Ex: Books.all, so we want to cache it.
           ivar = "@#{association_name}"
           if instance_variable_defined?(ivar)

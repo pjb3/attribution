@@ -33,13 +33,13 @@ end
 
 class Reader
   include Attribution
-  
+
   integer :id
-  
+
   def self.all(query = {})
     query
   end
-  
+
 end
 
 class Chapter
@@ -197,5 +197,13 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal nil, book.shipping_weight
     assert_equal nil, book.created_at
     assert_equal nil, book.time_zone
+  end
+
+  def test_attributes_setter
+    book = Book.new
+    book.attributes = { :title => "Whatever", :price => 50 }
+    assert_equal "Whatever", book.title
+    assert_equal BigDecimal.new("50"), book.price
+    assert_equal nil, book.id
   end
 end
