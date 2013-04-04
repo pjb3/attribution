@@ -13,13 +13,13 @@ module Attribution
     self.attributes = attributes
   end
 
-  # TODO: Use associations argument as a way to specify which associations should be included
   def attributes(*associations)
     self.class.attribute_names.inject({}) do |attrs, attr|
       attrs[attr] = send(attr)
       attrs
     end
   end
+  alias_method :to_h, :attributes
 
   def attributes=(attributes)
     if attributes

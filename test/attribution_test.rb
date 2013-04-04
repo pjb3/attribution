@@ -128,7 +128,7 @@ class AttributionTest < Test::Unit::TestCase
       { :name => :page_number, :type => :integer },
       { :name => :book_id, :type => :integer }
     ], Chapter.attributes
-    assert_equal({ :id => nil, :number => 1, :title => nil, :page_number => nil, :book_id => nil }, chapter.attributes)
+    assert_equal({ :id => nil, :number => 1, :title => nil, :page_number => nil, :book_id => nil }, chapter.to_h)
   end
 
   def test_date_hash
