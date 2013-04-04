@@ -1,5 +1,4 @@
-require 'test/unit'
-require 'attribution'
+require 'test_helper'
 
 #TODO: support using a different class name than the association name
 class Author

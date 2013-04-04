@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name          = "attribution"
-  gem.version       = "0.4.0"
+  gem.version       = "0.5.0"
   gem.authors       = ["Paul Barry"]
   gem.email         = ["mail@paulbarry.com"]
   gem.description   = %q{Add attributes to Ruby objects}
@@ -16,4 +16,5 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "activesupport"
   gem.add_runtime_dependency "tzinfo"
+  gem.add_development_dependency "activemodel"
 end

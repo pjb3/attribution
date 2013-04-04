@@ -1,6 +1,6 @@
-require "attribution/util"
-require "attribution/version"
-require "active_support/core_ext"
+require 'active_support/core_ext'
+require 'attribution/util'
+require 'attribution/version'
 
 module Attribution
   BOOLEAN_TRUE_STRINGS = ['y','yes','t','true']
