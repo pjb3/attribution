@@ -233,7 +233,7 @@ module Attribution
           raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
         end
 
-        objs = Array(arg).map do |obj|
+        objs = (arg.is_a?(Hash) ? arg.values : Array(arg)).map do |obj|
           o = association_class.cast(obj)
           o.send("#{self.class.name.underscore}=", self)
           o.send("#{self.class.name.underscore}_id=", id)

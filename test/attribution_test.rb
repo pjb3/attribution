@@ -205,4 +205,8 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal BigDecimal.new("50"), book.price
     assert_equal nil, book.id
   end
+
+  def test_has_many_setter_with_hash
+    assert_equal(["test"], Book.new("chapters" => { "0" => { "title" => "test" }}).chapters.map(&:title))
+  end
 end
