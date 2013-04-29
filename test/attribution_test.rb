@@ -209,4 +209,14 @@ class AttributionTest < Test::Unit::TestCase
   def test_has_many_setter_with_hash
     assert_equal(["test"], Book.new("chapters" => { "0" => { "title" => "test" }}).chapters.map(&:title))
   end
+
+  def test_non_attribute_values_should_be_ignored_by_the_initializer
+    book = Book.new(foo: 'bar')
+    assert_equal nil, book.instance_variable_get('@foo')
+  end
+
+  def test_to_json_should_only_include_attibutes
+    book = Book.new(id: 1, foo: 'bar')
+    assert_equal nil, JSON.parse(book.to_json)['foo']
+  end
 end

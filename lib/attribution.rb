@@ -21,6 +21,10 @@ module Attribution
   end
   alias_method :to_h, :attributes
 
+  def to_json
+    to_h.to_json
+  end
+
   def attributes=(attributes)
     if attributes
       attributes = JSON.parse(attributes) if attributes.is_a?(String)
@@ -28,8 +32,6 @@ module Attribution
         setter = "#{k}="
         if respond_to?(setter)
           send(setter, v)
-        else
-          instance_variable_set("@#{k}", v)
         end
       end
     end
