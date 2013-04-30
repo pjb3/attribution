@@ -10,6 +10,9 @@ module Attribution
   end
 
   def initialize(attributes={})
+    self.class.attribute_names.each do |attr|
+      instance_variable_set("@#{attr}", nil)
+    end
     self.attributes = attributes
   end
 
@@ -21,18 +24,17 @@ module Attribution
   end
   alias_method :to_h, :attributes
 
-  def to_json
-    to_h.to_json
-  end
-
   def attributes=(attributes)
-    if attributes
-      attributes = JSON.parse(attributes) if attributes.is_a?(String)
-      attributes.each do |k,v|
-        setter = "#{k}="
-        if respond_to?(setter)
-          send(setter, v)
-        end
+    attributes = case attributes
+    when String then JSON.parse(attributes)
+    when Hash then attributes
+    else {}
+    end.with_indifferent_access
+
+    attributes.each do |k,v|
+      setter = "#{k}="
+      if respond_to?(setter)
+        send(setter, v)
       end
     end
   end

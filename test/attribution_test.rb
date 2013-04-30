@@ -218,5 +218,6 @@ class AttributionTest < Test::Unit::TestCase
   def test_to_json_should_only_include_attibutes
     book = Book.new(id: 1, foo: 'bar')
     assert_equal nil, JSON.parse(book.to_json)['foo']
+    assert JSON.parse(book.to_json).key?('title'), 'to_json sohuld include attributes that have no value assigned to them'
   end
 end
