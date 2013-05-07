@@ -209,7 +209,7 @@ module Attribution
 
         # TODO: Support a more generic version of lazy-loading
         begin
-          association_class = association_name.to_s.singularize.classify.constantize
+          association_class = association_name.to_s.classify.constantize
         rescue NameError => ex
           raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
         end
@@ -232,7 +232,7 @@ module Attribution
       define_method("#{association_name}=") do |arg|
         # TODO: put this in method
         begin
-          association_class = association_name.to_s.singularize.classify.constantize
+          association_class = association_name.to_s.classify.constantize
         rescue NameError => ex
           raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
         end

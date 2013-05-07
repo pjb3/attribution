@@ -1,6 +1,19 @@
 require 'test_helper'
 
 #TODO: support using a different class name than the association name
+
+class Address
+  include Attribution
+
+  integer :id
+  string :street
+  string :city
+  string :state
+  string :zip
+
+  belongs_to :author
+end
+
 class Author
   include Attribution
 
@@ -8,6 +21,7 @@ class Author
   string :first_name
   string :last_name
 
+  has_many :addresses
   has_many :books
 end
 
@@ -219,5 +233,10 @@ class AttributionTest < Test::Unit::TestCase
     book = Book.new(id: 1, foo: 'bar')
     assert_equal nil, JSON.parse(book.to_json)['foo']
     assert JSON.parse(book.to_json).key?('title'), 'to_json sohuld include attributes that have no value assigned to them'
+  end
+
+  def test_has_many_association_name
+    author = Author.new(addresses: [{id: 1}])
+    assert_equal [1], author.addresses.map(&:id)
   end
 end
