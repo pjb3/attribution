@@ -49,7 +49,11 @@ module Attribution
     end
 
     def attributes
-      @attributes ||= []
+      @attributes ||= if superclass && superclass.respond_to?(:attributes)
+        superclass.attributes.dup
+      else
+        []
+      end
     end
 
     def attribute_names

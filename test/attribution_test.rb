@@ -76,6 +76,24 @@ class Page
   belongs_to :book
 end
 
+class Parent
+  include Attribution
+
+  string :foo
+end
+
+class Child < Parent
+  include Attribution
+
+  string :bar
+end
+
+class Grandchild < Child
+  include Attribution
+
+  string :baz
+end
+
 class AttributionTest < Test::Unit::TestCase
 
   def test_create
@@ -238,5 +256,9 @@ class AttributionTest < Test::Unit::TestCase
   def test_has_many_association_name
     author = Author.new(addresses: [{id: 1}])
     assert_equal [1], author.addresses.map(&:id)
+  end
+
+  def test_attribute_inheritence
+    assert_equal [:foo, :bar, :baz], Grandchild.attribute_names
   end
 end
