@@ -4,7 +4,7 @@ require 'attribution/model'
 class Article
   include Attribution::Model
 
-  string :title, required: true, format: { with: /^\w/, message: "must start with a letter" }, length: 4..20
+  string :title, required: true, format: { with: /\A\w/, message: "must start with a letter" }, length: 4..20
 end
 
 class AttributionModelTest < Test::Unit::TestCase
