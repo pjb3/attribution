@@ -11,10 +11,10 @@ class Address
   string :state
   string :zip
 
-  belongs_to :author
+  belongs_to :author, :class_name => 'Person'
 end
 
-class Author
+class Person
   include Attribution
 
   integer :id
@@ -92,6 +92,32 @@ class Grandchild < Child
   include Attribution
 
   string :baz
+end
+
+module Music
+
+end
+
+module Music
+  class Album
+    include Attribution
+
+    has_many :tracks
+
+    string :artist
+    string :title
+  end
+end
+
+module Music
+  class Track
+    include Attribution
+
+    belongs_to :album
+
+    integer :number
+    string :title
+  end
 end
 
 class AttributionTest < Test::Unit::TestCase
@@ -254,11 +280,21 @@ class AttributionTest < Test::Unit::TestCase
   end
 
   def test_has_many_association_name
-    author = Author.new(addresses: [{id: 1}])
-    assert_equal [1], author.addresses.map(&:id)
+    person = Person.new(addresses: [{id: 1}])
+    assert_equal [1], person.addresses.map(&:id)
   end
 
   def test_attribute_inheritence
     assert_equal [:foo, :bar, :baz], Grandchild.attribute_names
+  end
+
+  def test_namespaced_belongs_to
+    track = Music::Track.new(number: 1, title: "Elevator Music", album: { artist: "Beck", title: "The Information" })
+    assert_equal "Beck", track.album.artist
+  end
+
+  def test_namespaced_has_many
+    album = Music::Album.new(artist: "Beck", title: "The Information", tracks: [ { number: 1, title: "Elevator Music" } ])
+    assert_equal "Elevator Music", album.tracks.first.title
   end
 end

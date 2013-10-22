@@ -16,6 +16,7 @@ module Attribution
     self.attributes = attributes
   end
 
+  # @return [Hash] the attributes of this instance and their values
   def attributes(*associations)
     self.class.attribute_names.inject({}) do |attrs, attr|
       attrs[attr] = send(attr)
@@ -24,6 +25,7 @@ module Attribution
   end
   alias_method :to_h, :attributes
 
+  # @param [String, Hash] attributes The attributes and their values
   def attributes=(attributes)
     attributes = case attributes
     when String then JSON.parse(attributes)
@@ -40,6 +42,10 @@ module Attribution
   end
 
   module ClassMethods
+
+    # @param [Hash, Attribution] obj The Hash or Object to convert to
+    #   an instance of this class
+    # @return [Attribution] An instance of this class
     def cast(obj)
       case obj
       when Hash then new(obj)
@@ -48,6 +54,8 @@ module Attribution
       end
     end
 
+    # @return [Hash{Symbol => Object}] Each attribute name, type and
+    #   any related metadata in the order in which they were defined
     def attributes
       @attributes ||= if superclass && superclass.respond_to?(:attributes)
         superclass.attributes.dup
@@ -56,16 +64,28 @@ module Attribution
       end
     end
 
+    # @return [Array<Symbol>] The names of the attributes
+    #   in the order in which they were defined
     def attribute_names
       @attribute_names ||= attributes.map{|a| a[:name] }
     end
 
+    # Attribute macros
+
+    # Defines an attribute
+    #
+    # @param [String] name The name of the attribute
+    # @param [Symbol] type The type of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def add_attribute(name, type, metadata={})
       attr_reader name
       attributes << (metadata || {}).merge(:name => name.to_sym, :type => type.to_sym)
     end
 
-    # Attribute macros
+    # Defines a string attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def string(attr, metadata={})
       add_attribute(attr, :string, metadata)
       define_method("#{attr}=") do |arg|
@@ -73,6 +93,10 @@ module Attribution
       end
     end
 
+    # Defines a boolean attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def boolean(attr, metadata={})
       add_attribute(attr, :boolean, metadata)
       define_method("#{attr}=") do |arg|
@@ -87,6 +111,10 @@ module Attribution
       alias_method "#{attr}?", attr
     end
 
+    # Defines a integer attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def integer(attr, metadata={})
       add_attribute(attr, :integer, metadata)
       define_method("#{attr}=") do |arg|
@@ -94,6 +122,10 @@ module Attribution
       end
     end
 
+    # Defines a float attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def float(attr, metadata={})
       add_attribute(attr, :float, metadata)
       define_method("#{attr}=") do |arg|
@@ -101,6 +133,10 @@ module Attribution
       end
     end
 
+    # Defines a decimal attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def decimal(attr, metadata={})
       add_attribute(attr, :decimal, metadata)
       define_method("#{attr}=") do |arg|
@@ -108,6 +144,10 @@ module Attribution
       end
     end
 
+    # Defines a date attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def date(attr, metadata={})
       add_attribute(attr, :date, metadata)
       define_method("#{attr}=") do |arg|
@@ -125,6 +165,10 @@ module Attribution
       end
     end
 
+    # Defines a time attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def time(attr, metadata={})
       add_attribute(attr, :time, metadata)
       define_method("#{attr}=") do |arg|
@@ -142,6 +186,10 @@ module Attribution
       end
     end
 
+    # Defines a time zone attribute, based on ActiveSupport::TimeZone
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
     def time_zone(attr, metadata={})
       add_attribute(attr, :time_zone, metadata)
       define_method("#{attr}=") do |arg|
@@ -150,10 +198,20 @@ module Attribution
     end
 
     # Association macros
+
+    # Defines an attribute that is a reference to another Attribution class.
+    #
+    # @param [Symbol] association_name The name of the association
+    # @param [Hash] metadata Extra information about the association.
+    # @option metadata [String] :class_name Class of the association,
+    #   defaults to a class name based on the association name
     def belongs_to(association_name, metadata={})
       # foo_id
       id_getter = "#{association_name}_id".to_sym
       add_attribute(id_getter, :integer, metadata)
+
+      association_class_name = metadata.try(:fetch, :class_name, [name.deconstantize, association_name.to_s.classify].reject(&:blank?).join('::'))
+
       define_method(id_getter) do
         ivar = "@#{id_getter}"
         if instance_variable_defined?(ivar)
@@ -177,11 +235,12 @@ module Attribution
         if instance_variable_defined?("@#{association_name}")
           instance_variable_get("@#{association_name}")
         elsif id = instance_variable_get("@#{association_name}_id")
+
           # TODO: Support a more generic version of lazy-loading
           begin
-            association_class = association_name.to_s.classify.constantize
+            association_class = Object.const_get(association_class_name)
           rescue NameError => ex
-            raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
+            raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
           end
 
           if association_class.respond_to?(:find)
@@ -195,9 +254,9 @@ module Attribution
       # foo=
       define_method("#{association_name}=") do |arg|
         begin
-          association_class = association_name.to_s.classify.constantize
+          association_class = Object.const_get(association_class_name)
         rescue NameError => ex
-          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
+          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
         end
 
         if instance_variable_defined?("@#{association_name}_id")
@@ -207,15 +266,24 @@ module Attribution
       end
     end
 
-    def has_many(association_name)
+    # Defines an attribute that is a reference to an Array of another Attribution class.
+    #
+    # @param [Symbol] association_name The name of the association
+    # @param [Hash] metadata Extra information about the association.
+    # @option metadata [String] :class_name Class of the association,
+    #   defaults to a class name based on the association name
+    def has_many(association_name, metadata={})
+
+      association_class_name = metadata.try(:fetch, :class_name, [name.deconstantize, association_name.to_s.singularize.classify].reject(&:blank?).join('::'))
+
       # foos
       define_method(association_name) do |*query|
 
         # TODO: Support a more generic version of lazy-loading
         begin
-          association_class = association_name.to_s.classify.constantize
+          association_class = Object.const_get(association_class_name)
         rescue NameError => ex
-          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
+          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
         end
 
         if query.empty? # Ex: Books.all, so we want to cache it.
@@ -227,7 +295,7 @@ module Attribution
           end
         else # Ex: Book.all(:name => "The..."), so we do not want to cache it
           if association_class.respond_to?(:all)
-            Array(association_class.all({"#{self.class.name.underscore}_id" => id}.merge(query.first)))
+            Array(association_class.all({"#{self.class.name.demodulize.underscore}_id" => id}.merge(query.first)))
           end
         end
       end
@@ -236,15 +304,23 @@ module Attribution
       define_method("#{association_name}=") do |arg|
         # TODO: put this in method
         begin
-          association_class = association_name.to_s.classify.constantize
+          association_class = Object.const_get(association_class_name)
         rescue NameError => ex
-          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_name.to_s.classify} does not exist")
+          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
         end
 
+        attr_name = self.class.name.demodulize.underscore
         objs = (arg.is_a?(Hash) ? arg.values : Array(arg)).map do |obj|
           o = association_class.cast(obj)
-          o.send("#{self.class.name.underscore}=", self)
-          o.send("#{self.class.name.underscore}_id=", id)
+
+          if o.respond_to?("#{attr_name}=")
+            o.send("#{attr_name}=", self)
+          end
+
+          if o.respond_to?("#{attr_name}_id=") && respond_to?(:id)
+            o.send("#{attr_name}_id=", id)
+          end
+
           o
         end
         instance_variable_set("@#{association_name}", objs)
