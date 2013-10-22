@@ -210,7 +210,7 @@ module Attribution
       id_getter = "#{association_name}_id".to_sym
       add_attribute(id_getter, :integer, metadata)
 
-      association_class_name = metadata.try(:fetch, :class_name, [name.deconstantize, association_name.to_s.classify].reject(&:blank?).join('::'))
+      association_class_name = metadata.try(:fetch, :class_name, [name.split('::')[0..-2].join('::'), association_name.to_s.classify].reject(&:blank?).join('::'))
 
       define_method(id_getter) do
         ivar = "@#{id_getter}"
@@ -274,7 +274,7 @@ module Attribution
     #   defaults to a class name based on the association name
     def has_many(association_name, metadata={})
 
-      association_class_name = metadata.try(:fetch, :class_name, [name.deconstantize, association_name.to_s.singularize.classify].reject(&:blank?).join('::'))
+      association_class_name = metadata.try(:fetch, :class_name, [name.split('::')[0..-2].join('::'), association_name.to_s.singularize.classify].reject(&:blank?).join('::'))
 
       # foos
       define_method(association_name) do |*query|
