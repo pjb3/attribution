@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name          = "attribution"
-  gem.version       = "0.6.5"
+  gem.version       = "0.7.0"
   gem.authors       = ["Paul Barry"]
   gem.email         = ["mail@paulbarry.com"]
   gem.description   = %q{Add attributes to Ruby objects}

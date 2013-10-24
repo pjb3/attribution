@@ -197,6 +197,10 @@ module Attribution
       end
     end
 
+    def autoload_associations?
+      true
+    end
+
     # Association macros
 
     # Defines an attribute that is a reference to another Attribution class.
@@ -236,14 +240,13 @@ module Attribution
           instance_variable_get("@#{association_name}")
         elsif id = instance_variable_get("@#{association_name}_id")
 
-          # TODO: Support a more generic version of lazy-loading
           begin
             association_class = Object.const_get(association_class_name)
           rescue NameError => ex
             raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
           end
 
-          if association_class.respond_to?(:find)
+          if self.class.autoload_associations? && association_class.respond_to?(:find)
             instance_variable_set("@#{association_name}", association_class.find(id))
           end
         else
@@ -290,11 +293,11 @@ module Attribution
           ivar = "@#{association_name}"
           if instance_variable_defined?(ivar)
             instance_variable_get(ivar)
-          elsif association_class.respond_to?(:all)
+          elsif self.class.autoload_associations? && association_class.respond_to?(:all)
             instance_variable_set(ivar, Array(association_class.all("#{self.class.name.underscore}_id" => id)))
           end
         else # Ex: Book.all(:name => "The..."), so we do not want to cache it
-          if association_class.respond_to?(:all)
+          if self.class.autoload_associations? && association_class.respond_to?(:all)
             Array(association_class.all({"#{self.class.name.demodulize.underscore}_id" => id}.merge(query.first)))
           end
         end

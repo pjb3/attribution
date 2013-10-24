@@ -42,6 +42,9 @@ class Book
   belongs_to :book
   has_many :chapters
   has_many :readers
+
+  def self.find(*args)
+  end
 end
 
 class Reader
@@ -65,6 +68,10 @@ class Chapter
 
   belongs_to :book
   has_many :pages
+
+  def self.all(*args)
+    []
+  end
 end
 
 class Page
@@ -118,6 +125,22 @@ module Music
     integer :number
     string :title
   end
+end
+
+class StoreModel
+  include Attribution
+
+  def self.autoload_associations?
+    false
+  end
+end
+
+class Product < StoreModel
+  has_many :orders
+end
+
+class Order < StoreModel
+  belongs_to :product
 end
 
 class AttributionTest < Test::Unit::TestCase
@@ -274,7 +297,7 @@ class AttributionTest < Test::Unit::TestCase
   end
 
   def test_to_json_should_only_include_attibutes
-    book = Book.new(id: 1, foo: 'bar')
+    book = Book.new(:id => 1, :foo => 'bar')
     assert_equal nil, JSON.parse(book.to_json)['foo']
     assert JSON.parse(book.to_json).key?('title'), 'to_json sohuld include attributes that have no value assigned to them'
   end
@@ -289,12 +312,37 @@ class AttributionTest < Test::Unit::TestCase
   end
 
   def test_namespaced_belongs_to
-    track = Music::Track.new(number: 1, title: "Elevator Music", album: { artist: "Beck", title: "The Information" })
+    track = Music::Track.new(:number => 1, :title => "Elevator Music", :album => { :artist => "Beck", :title => "The Information" })
     assert_equal "Beck", track.album.artist
   end
 
   def test_namespaced_has_many
-    album = Music::Album.new(artist: "Beck", title: "The Information", tracks: [ { number: 1, title: "Elevator Music" } ])
+    album = Music::Album.new(:artist => "Beck", :title => "The Information", :tracks => [ { :number => 1, :title => "Elevator Music" } ])
     assert_equal "Elevator Music", album.tracks.first.title
   end
+
+  def test_autoload_belongs_to_associations
+    chapter = Chapter.new(:book_id => 42)
+    Book.expects(:find).with(42)
+    chapter.book
+  end
+
+  def test_autoload_has_many_associations
+    book = Book.new(:id => 42)
+    Chapter.expects(:all).with("book_id" => 42)
+    book.chapters
+  end
+
+  def test_disabled_autoload_belongs_to_associations
+    order = Order.new
+    Product.expects(:find).never
+    order.product
+  end
+
+  def test_disabled_autoload_has_many_associations
+    product = Product.new
+    Order.expects(:all).never
+    product.orders
+  end
+
 end
