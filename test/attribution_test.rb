@@ -130,9 +130,7 @@ end
 class StoreModel
   include Attribution
 
-  def self.autoload_associations?
-    false
-  end
+  autoload_associations false
 end
 
 class Product < StoreModel

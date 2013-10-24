@@ -197,8 +197,18 @@ module Attribution
       end
     end
 
+    def autoload_associations(autoload_associations)
+      @autoload_associations = autoload_associations
+    end
+
     def autoload_associations?
-      true
+      if defined? @autoload_associations
+        @autoload_associations
+      elsif superclass && superclass.respond_to?(:autoload_associations?)
+        superclass.autoload_associations?
+      else
+        true
+      end
     end
 
     # Association macros
