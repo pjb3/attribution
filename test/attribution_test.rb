@@ -39,7 +39,6 @@ class Book
   time :updated_at
   time_zone :time_zone
 
-  belongs_to :book
   has_many :chapters
   has_many :readers
 
@@ -341,6 +340,13 @@ class AttributionTest < Test::Unit::TestCase
     product = Product.new
     Order.expects(:all).never
     product.orders
+  end
+
+  def test_associations
+    assert_equal [
+      { :name => :book, :type => :belongs_to },
+      { :name => :pages, :type => :has_many }
+    ], Chapter.associations
   end
 
 end

@@ -197,14 +197,38 @@ module Attribution
       end
     end
 
+    # Associations
+
+    # @return [Array<Hash>] The associations for this class
+    def associations
+      @associations ||= if superclass && superclass.respond_to?(:associations)
+        superclass.associations.dup
+      else
+        []
+      end
+    end
+
+    # Defines an association
+    #
+    # @param [String] name The name of the association
+    # @param [Symbol] type The type of the association
+    # @param [Hash{Symbol => Object}] metadata The metadata for the association
+    def add_association(name, type, metadata={})
+      associations << (metadata || {}).merge(:name => name.to_sym, :type => type.to_sym)
+    end
+
+    # @param [Boolean] autoload_associations Enable/Disable autoloading of
+    #   associations for this class and all subclasses.
     def autoload_associations(autoload_associations)
       @autoload_associations = autoload_associations
     end
 
+    # @return [Boolean] autoload_associations Whether or not this will
+    #   autoload associations.
     def autoload_associations?
       if defined? @autoload_associations
         @autoload_associations
-      elsif superclass && superclass.respond_to?(:autoload_associations?)
+      elsif superclass.respond_to?(:autoload_associations?)
         superclass.autoload_associations?
       else
         true
@@ -212,8 +236,8 @@ module Attribution
     end
 
     # Association macros
-
-    # Defines an attribute that is a reference to another Attribution class.
+    #
+    # Defines an association that is a reference to another Attribution class.
     #
     # @param [Symbol] association_name The name of the association
     # @param [Hash] metadata Extra information about the association.
@@ -223,7 +247,7 @@ module Attribution
       # foo_id
       id_getter = "#{association_name}_id".to_sym
       add_attribute(id_getter, :integer, metadata)
-
+      add_association association_name, :belongs_to, metadata
       association_class_name = metadata.try(:fetch, :class_name, [name.split('::')[0..-2].join('::'), association_name.to_s.classify].reject(&:blank?).join('::'))
 
       define_method(id_getter) do
@@ -279,7 +303,7 @@ module Attribution
       end
     end
 
-    # Defines an attribute that is a reference to an Array of another Attribution class.
+    # Defines an association that is a reference to an Array of another Attribution class.
     #
     # @param [Symbol] association_name The name of the association
     # @param [Hash] metadata Extra information about the association.
@@ -287,11 +311,12 @@ module Attribution
     #   defaults to a class name based on the association name
     def has_many(association_name, metadata={})
 
+      add_association association_name, :has_many, metadata
+
       association_class_name = metadata.try(:fetch, :class_name, [name.split('::')[0..-2].join('::'), association_name.to_s.singularize.classify].reject(&:blank?).join('::'))
 
       # foos
       define_method(association_name) do |*query|
-
         # TODO: Support a more generic version of lazy-loading
         begin
           association_class = Object.const_get(association_class_name)
