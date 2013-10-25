@@ -197,6 +197,29 @@ module Attribution
       end
     end
 
+    # Defines an array attribute
+    #
+    # @param [Symbol] attr The name of the attribute
+    # @param [Hash{Symbol => Object}] metadata The metadata for the attribute
+    def array(attr, metadata={})
+      add_attribute(attr, :array, metadata)
+      define_method("#{attr}=") do |arg|
+        instance_variable_set("@#{attr}", Array(arg))
+      end
+    end
+
+    # Defines a hash attribute. This is named hash_attr instead of hash
+    # to avoid a conflict with Object#hash
+    #
+    # @params [Symbol] attr The name of the attribute
+    # @params [Hash{Symbol => Object}] metadata The metadata for the attribute
+    def hash_attr(attr, metadata={})
+      add_attribute(attr, :hash, metadata)
+      define_method("#{attr}=") do |arg|
+        instance_variable_set("@#{attr}", Hash(arg))
+      end
+    end
+
     # Associations
 
     # @return [Array<Hash>] The associations for this class

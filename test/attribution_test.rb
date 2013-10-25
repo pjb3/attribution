@@ -1,7 +1,5 @@
 require 'test_helper'
 
-#TODO: support using a different class name than the association name
-
 class Address
   include Attribution
 
@@ -38,6 +36,8 @@ class Book
   time :created_at
   time :updated_at
   time_zone :time_zone
+  array :numbers
+  hash_attr :location
 
   has_many :chapters
   has_many :readers
@@ -253,6 +253,21 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal Time.parse('2013-03-17 00:00:00'), book.created_at
   end
 
+  def test_nothing
+    book = Book.new
+    assert_equal nil, book.id
+    assert_equal nil, book.title
+    assert_equal nil, book.price
+    assert_equal nil, book.published_on
+    assert_equal nil, book.ebook_available
+    assert_equal nil, book.used
+    assert_equal nil, book.shipping_weight
+    assert_equal nil, book.created_at
+    assert_equal nil, book.time_zone
+    assert_equal nil, book.numbers
+    assert_equal nil, book.location
+  end
+
   def test_nil
     book = Book.new(
       :id => nil,
@@ -264,6 +279,8 @@ class AttributionTest < Test::Unit::TestCase
       :shipping_weight => nil,
       :created_at => nil,
       :time_zone => nil,
+      :numbers => nil,
+      :location => nil
     )
     assert_equal nil, book.id
     assert_equal nil, book.title
@@ -274,6 +291,19 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal nil, book.shipping_weight
     assert_equal nil, book.created_at
     assert_equal nil, book.time_zone
+    assert_equal [], book.numbers
+    assert_equal({}, book.location)
+  end
+
+  def test_array_with_scalar
+    book = Book.new(:numbers => 42)
+    assert_equal [42], book.numbers
+  end
+
+  def test_hash_attr
+    book = Book.new(:location => { :lat => 39.27983915, :lon => -76.60873889 })
+    assert_equal  39.27983915, book.location[:lat]
+    assert_equal -76.60873889, book.location[:lon]
   end
 
   def test_attributes_setter
