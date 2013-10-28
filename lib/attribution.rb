@@ -327,7 +327,7 @@ module Attribution
 
       add_association association_name, :has_many, metadata
 
-      association_class_name = metadata.try(:fetch, :class_name, [name.split('::')[0..-2].join('::'), association_name.to_s.singularize.classify].reject(&:blank?).join('::'))
+      association_class_name = metadata.try(:fetch, :class_name, [name.split('::')[0..-2].join('::'), association_name.to_s.classify].reject(&:blank?).join('::'))
 
       # foos
       define_method(association_name) do |*query|
