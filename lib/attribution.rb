@@ -296,12 +296,7 @@ module Attribution
         if instance_variable_defined?("@#{association_name}")
           instance_variable_get("@#{association_name}")
         elsif id = instance_variable_get("@#{association_name}_id")
-
-          begin
-            association_class = Object.const_get(association_class_name)
-          rescue NameError => ex
-            raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
-          end
+          association_class = association_class_name.constantize
 
           if self.class.autoload_associations? && association_class.respond_to?(:find)
             instance_variable_set("@#{association_name}", association_class.find(id))
@@ -313,11 +308,7 @@ module Attribution
 
       # foo=
       define_method("#{association_name}=") do |arg|
-        begin
-          association_class = Object.const_get(association_class_name)
-        rescue NameError => ex
-          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
-        end
+        association_class = association_class_name.constantize
 
         if instance_variable_defined?("@#{association_name}_id")
           remove_instance_variable("@#{association_name}_id")
@@ -340,13 +331,9 @@ module Attribution
 
       # foos
       define_method(association_name) do |*query|
-        # TODO: Support a more generic version of lazy-loading
-        begin
-          association_class = Object.const_get(association_class_name)
-        rescue NameError => ex
-          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
-        end
+        association_class = association_class_name.constantize
 
+        # TODO: Support a more generic version of lazy-loading
         if query.empty? # Ex: Books.all, so we want to cache it.
           ivar = "@#{association_name}"
           if instance_variable_defined?(ivar)
@@ -363,12 +350,7 @@ module Attribution
 
       # foos=
       define_method("#{association_name}=") do |arg|
-        # TODO: put this in method
-        begin
-          association_class = Object.const_get(association_class_name)
-        rescue NameError => ex
-          raise ArgumentError.new("Association #{association_name} in #{self.class} is invalid because #{association_class_name} does not exist")
-        end
+        association_class = association_class_name.constantize
 
         attr_name = self.class.name.demodulize.underscore
         objs = (arg.is_a?(Hash) ? arg.values : Array(arg)).map do |obj|
