@@ -216,7 +216,7 @@ module Attribution
     def hash_attr(attr, metadata={})
       add_attribute(attr, :hash, metadata)
       define_method("#{attr}=") do |arg|
-        instance_variable_set("@#{attr}", Hash(arg))
+        instance_variable_set("@#{attr}", arg || {})
       end
     end
 
