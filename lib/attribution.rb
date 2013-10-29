@@ -340,6 +340,8 @@ module Attribution
             instance_variable_get(ivar)
           elsif self.class.autoload_associations? && association_class.respond_to?(:all)
             instance_variable_set(ivar, Array(association_class.all("#{self.class.name.underscore}_id" => id)))
+          else
+            []
           end
         else # Ex: Book.all(:name => "The..."), so we do not want to cache it
           if self.class.autoload_associations? && association_class.respond_to?(:all)

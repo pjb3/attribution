@@ -266,6 +266,7 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal nil, book.time_zone
     assert_equal nil, book.numbers
     assert_equal nil, book.location
+    assert_equal [], book.chapters
   end
 
   def test_nil
@@ -293,6 +294,7 @@ class AttributionTest < Test::Unit::TestCase
     assert_equal nil, book.time_zone
     assert_equal [], book.numbers
     assert_equal({}, book.location)
+    assert_equal [], book.chapters
   end
 
   def test_array_with_scalar
@@ -369,7 +371,7 @@ class AttributionTest < Test::Unit::TestCase
   def test_disabled_autoload_has_many_associations
     product = Product.new
     Order.expects(:all).never
-    product.orders
+    assert_equal [], product.orders
   end
 
   def test_associations
