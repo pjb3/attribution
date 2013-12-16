@@ -152,6 +152,7 @@ And retrieve that metadata any time:
 Attribution also has a module to make any object act more like a model:
 
 ``` ruby
+require 'attribution/model'
 class Book
   include Attribution::Model
 end
