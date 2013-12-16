@@ -1,6 +1,7 @@
 require 'active_support/core_ext'
 require 'attribution/util'
 require 'attribution/version'
+require 'attribution/model'
 
 module Attribution
   BOOLEAN_TRUE_STRINGS = ['y','yes','t','true']

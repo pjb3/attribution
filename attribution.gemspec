@@ -17,4 +17,5 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "activesupport"
   gem.add_runtime_dependency "tzinfo"
   gem.add_development_dependency "activemodel"
+  gem.add_development_dependency "mocha"
 end
